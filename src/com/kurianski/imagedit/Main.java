@@ -2,9 +2,11 @@ package com.kurianski.imagedit;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 
 import javax.imageio.ImageIO;
+
+import com.kurianski.utils.ColorUtil;
+import com.kurianski.utils.ImageUtil;
 
 import javafx.application.Application;
 import javafx.embed.swing.SwingFXUtils;
@@ -24,8 +26,6 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.paint.Color;
 import javafx.stage.DirectoryChooser;
-import javafx.stage.FileChooser;
-import javafx.stage.FileChooser.ExtensionFilter;
 import javafx.stage.Stage;
  
 public class Main extends Application {
@@ -40,10 +40,10 @@ public class Main extends Application {
     
     @Override
     public void start(Stage stage) {
-        originalImage = readImage(stage);
+        originalImage = ImageUtil.readImage(stage);
         
-        originalImageContainer = createImageContainer(originalImage);
-        editedImageContainer = createImageContainer(originalImage); //temp
+        originalImageContainer = ImageUtil.createImageContainer(originalImage);
+        editedImageContainer = ImageUtil.createImageContainer(originalImage); //temp
 
         slider = new Slider(0, 255, 0);
         slider.setMajorTickUnit(35);
@@ -94,7 +94,7 @@ public class Main extends Application {
         stage.show();
     }
 
-    public static void updateImage() {
+    private static void updateImage() {
         if(editableImage == null) {
             editableImage = new WritableImage((int) originalImage.getWidth(), (int) originalImage.getHeight());
             editedImageContainer.setImage(editableImage);
@@ -106,44 +106,10 @@ public class Main extends Application {
         for(int line = 0; line < originalImage.getWidth(); line++) {
             for(int col = 0; col < originalImage.getHeight(); col++) {
                 Color color = reader.getColor(line, col);
-                color = increaseBrightness(color, bright_bonus);
+                color = ColorUtil.increaseBrightness(color, bright_bonus);
                 writer.setColor(line, col, color);
             }
         }
-    }
-
-    public static Image readImage(Stage stage) {
-        FileChooser fileSelection = new FileChooser();
-        fileSelection.getExtensionFilters().add(new ExtensionFilter("Image file", "*.jpeg", "*.png", "*.jpg"));
-        File file = fileSelection.showOpenDialog(stage);
-        return new Image(file.toURI().toString());
-    }
-    
-    public static ImageView createImageContainer(Image image) {
-        ImageView imageContainer = new ImageView();
-        imageContainer.setImage(image);
-        imageContainer.setFitWidth(250);
-        imageContainer.setPreserveRatio(true);
-        imageContainer.setSmooth(true);
-        imageContainer.setCache(true);
-        
-        return imageContainer;
-    }
-    
-    public static Color increaseBrightness(Color color, int c) {
-        ArrayList<Integer> colors_rgb = new ArrayList<>();
-        double[] colors = {color.getRed(), color.getGreen(), color.getBlue()};
-        
-        for(double double_color : colors) {
-            int rgb_color = doubleToRGB(double_color) + c;
-            if(rgb_color > 255) rgb_color = 255;
-            colors_rgb.add(rgb_color);
-        }
-        return Color.rgb(colors_rgb.get(0), colors_rgb.get(1), colors_rgb.get(2), color.getOpacity());
-    }
-    
-    public static int doubleToRGB(double value) {
-        return (int) (value*255);
     }
     
      public static void main(String[] args) {

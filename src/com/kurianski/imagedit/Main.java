@@ -5,7 +5,9 @@ import java.io.IOException;
 
 import javax.imageio.ImageIO;
 
+import com.kurianski.utils.ColorObject;
 import com.kurianski.utils.ColorUtil;
+import com.kurianski.utils.HistogramUtil;
 import com.kurianski.utils.ImageUtil;
 
 import javafx.application.Application;
@@ -15,6 +17,8 @@ import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
+import javafx.scene.chart.BarChart;
+import javafx.scene.chart.XYChart;
 import javafx.scene.control.Button;
 import javafx.scene.control.Slider;
 import javafx.scene.image.Image;
@@ -32,6 +36,7 @@ public class Main extends Application {
     private static Image originalImage = null;
     private static WritableImage editableImage = null;
     private static Button saveImage = null;
+    private static Button histograms = null;
     private static ImageView originalImageContainer = null;
     private static ImageView editedImageContainer = null;
     private static Slider slider = null;
@@ -69,6 +74,18 @@ public class Main extends Application {
                 }
             }
         });
+        
+        histograms = new Button();
+        histograms.setText("Generate Histograms");
+        histograms.setOnAction(new EventHandler<ActionEvent>() {
+        
+            @Override
+            public void handle(ActionEvent event) {
+            	showHistogram("red");
+                showHistogram("green");
+                showHistogram("blue");
+            }
+        });
 
         HBox imageContainers = new HBox();
         imageContainers.getChildren().addAll(originalImageContainer, editedImageContainer);
@@ -77,7 +94,7 @@ public class Main extends Application {
         imageContainers.setPadding(new Insets(50));
         
         HBox buttonContainers = new HBox();
-        buttonContainers.getChildren().addAll(slider, saveImage);
+        buttonContainers.getChildren().addAll(slider, saveImage, histograms);
         buttonContainers.setAlignment(Pos.CENTER);
         buttonContainers.setSpacing(50);
         buttonContainers.setPadding(new Insets(15));
@@ -92,6 +109,33 @@ public class Main extends Application {
         stage.setTitle("Image Editor");
         stage.setScene(scene);
         stage.show();
+    }
+    
+    public static void showHistogram(String color) {
+    	BarChart<String, Number> histogram = HistogramUtil.genBarChart();
+    	ColorObject colorObject = HistogramUtil.generateColorsArray(originalImage.getPixelReader(), (int) originalImage.getWidth(), (int) originalImage.getHeight());
+    	
+    	XYChart.Series<String, Number> data = null;
+    	
+    	if(color.equals("red")) {
+    		data = HistogramUtil.genHistogram(colorObject.red, "Vermelho");
+    	} else if(color.equals("green")) {
+    		data = HistogramUtil.genHistogram(colorObject.green, "Verde");
+    	} else if(color.equals("blue")) {
+    		data = HistogramUtil.genHistogram(colorObject.blue, "Azul");
+    	} else {
+    		throw new IllegalArgumentException("Cor inválida");
+    	}
+        
+        histogram.getData().add(data);
+        histogram.setBarGap(17);
+        histogram.setCategoryGap(0);
+    	
+    	Stage histogramWindow = new Stage();
+    	Scene histogramGraph = new Scene(histogram, 400, 400);
+        histogramWindow.setScene(histogramGraph);
+        histogramWindow.setTitle(color);
+        histogramWindow.show();
     }
 
     private static void updateImage() {

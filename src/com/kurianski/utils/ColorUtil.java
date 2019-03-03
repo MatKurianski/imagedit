@@ -19,7 +19,7 @@ public class ColorUtil {
 	    return Color.rgb(colors_rgb.get(0), colors_rgb.get(1), colors_rgb.get(2), color.getOpacity());
 	}
 
-	private static int doubleToRGB(double value) {
+	public static int doubleToRGB(double value) {
 	    return (int) (value*255);
 	}
 }

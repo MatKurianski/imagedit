@@ -14,6 +14,7 @@ public class ColorUtil {
 	    for(double double_color : colors) {
 	        int rgb_color = doubleToRGB(double_color) + c;
 	        if(rgb_color > 255) rgb_color = 255;
+	        else if(rgb_color < 0) rgb_color = 0;
 	        colors_rgb.add(rgb_color);
 	    }
 	    return Color.rgb(colors_rgb.get(0), colors_rgb.get(1), colors_rgb.get(2), color.getOpacity());

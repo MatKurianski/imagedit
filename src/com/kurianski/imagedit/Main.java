@@ -36,7 +36,7 @@ public class Main extends Application {
     private static Image originalImage = null;
     private static WritableImage editableImage = null;
     private static Button saveImage = null;
-    private static Button histograms = null;
+    private static Button histogramsOriginal, histogramsNewImage = null;
     private static ImageView originalImageContainer = null;
     private static ImageView editedImageContainer = null;
     private static Slider slider = null;
@@ -46,16 +46,17 @@ public class Main extends Application {
     @Override
     public void start(Stage stage) {
         originalImage = ImageUtil.readImage(stage);
-        
         originalImageContainer = ImageUtil.createImageContainer(originalImage);
-        editedImageContainer = ImageUtil.createImageContainer(originalImage); //temp
+        
+        editableImage = new WritableImage((int) originalImage.getWidth(), (int) originalImage.getHeight());
+        editedImageContainer = ImageUtil.createImageContainer(originalImage);
 
-        slider = new Slider(0, 255, 0);
+        slider = new Slider(-255, 255, 0);
         slider.setMajorTickUnit(35);
         slider.setBlockIncrement(1);
         slider.valueProperty().addListener((observable, oldValue, newValue) -> {
             bright_bonus = newValue.intValue();
-            updateImage();
+            updateImage(originalImage, editableImage, bright_bonus);
         });
 
         saveImage = new Button();
@@ -75,15 +76,27 @@ public class Main extends Application {
             }
         });
         
-        histograms = new Button();
-        histograms.setText("Generate Histograms");
-        histograms.setOnAction(new EventHandler<ActionEvent>() {
+        histogramsOriginal = new Button();
+        histogramsOriginal.setText("Generate Histograms [Original image]");
+        histogramsOriginal.setOnAction(new EventHandler<ActionEvent>() {
         
             @Override
             public void handle(ActionEvent event) {
-            	showHistogram("red");
-                showHistogram("green");
-                showHistogram("blue");
+            	showHistogram(originalImage, "red");
+                showHistogram(originalImage, "green");
+                showHistogram(originalImage, "blue");
+            }
+        });
+        
+        histogramsNewImage = new Button();
+        histogramsNewImage.setText("Generate Histograms [Edited image]");
+        histogramsNewImage.setOnAction(new EventHandler<ActionEvent>() {
+        
+            @Override
+            public void handle(ActionEvent event) {
+            	showHistogram(editableImage, "red");
+                showHistogram(editableImage, "green");
+                showHistogram(editableImage, "blue");
             }
         });
 
@@ -94,7 +107,7 @@ public class Main extends Application {
         imageContainers.setPadding(new Insets(50));
         
         HBox buttonContainers = new HBox();
-        buttonContainers.getChildren().addAll(slider, saveImage, histograms);
+        buttonContainers.getChildren().addAll(slider, saveImage, histogramsOriginal, histogramsNewImage);
         buttonContainers.setAlignment(Pos.CENTER);
         buttonContainers.setSpacing(50);
         buttonContainers.setPadding(new Insets(15));
@@ -102,7 +115,7 @@ public class Main extends Application {
         BorderPane borderpane = new BorderPane();
         borderpane.setTop(imageContainers);
         borderpane.setBottom(buttonContainers);
-        borderpane.setPrefSize(800, 600);
+        borderpane.setPrefSize(1000, 600);
     
         Scene scene = new Scene(borderpane);
         
@@ -111,9 +124,9 @@ public class Main extends Application {
         stage.show();
     }
     
-    public static void showHistogram(String color) {
+    public static void showHistogram(Image image, String color) {
     	BarChart<String, Number> histogram = HistogramUtil.genBarChart();
-    	ColorObject colorObject = HistogramUtil.generateColorsArray(originalImage.getPixelReader(), (int) originalImage.getWidth(), (int) originalImage.getHeight());
+    	ColorObject colorObject = HistogramUtil.generateColorsArray(image.getPixelReader(), (int) image.getWidth(), (int) image.getHeight());
     	
     	XYChart.Series<String, Number> data = null;
     	
@@ -124,7 +137,7 @@ public class Main extends Application {
     	} else if(color.equals("blue")) {
     		data = HistogramUtil.genHistogram(colorObject.blue, "Azul");
     	} else {
-    		throw new IllegalArgumentException("Cor inválida");
+    		throw new IllegalArgumentException("Cor invï¿½lida");
     	}
         
         histogram.getData().add(data);
@@ -132,20 +145,16 @@ public class Main extends Application {
         histogram.setCategoryGap(0);
     	
     	Stage histogramWindow = new Stage();
-    	Scene histogramGraph = new Scene(histogram, 400, 400);
+    	Scene histogramGraph = new Scene(histogram, 500, 500);
         histogramWindow.setScene(histogramGraph);
         histogramWindow.setTitle(color);
         histogramWindow.show();
     }
 
-    private static void updateImage() {
-        if(editableImage == null) {
-            editableImage = new WritableImage((int) originalImage.getWidth(), (int) originalImage.getHeight());
-            editedImageContainer.setImage(editableImage);
-        }
-        
+    private static void updateImage(Image originalImage, WritableImage newImage, int constant) {
+    	editedImageContainer.setImage(newImage);
         PixelReader reader = originalImage.getPixelReader();
-        PixelWriter writer = editableImage.getPixelWriter();
+        PixelWriter writer = newImage.getPixelWriter();
         
         for(int line = 0; line < originalImage.getWidth(); line++) {
             for(int col = 0; col < originalImage.getHeight(); col++) {

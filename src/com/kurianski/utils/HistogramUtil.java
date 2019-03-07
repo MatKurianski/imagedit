@@ -19,19 +19,19 @@ public class HistogramUtil {
         final NumberAxis yAxis = new NumberAxis();
         
         xAxis.setLabel("Cores RGB");       
-        yAxis.setLabel("Frequência");
+        yAxis.setLabel("Frequï¿½ncia");
         
         return new BarChart<>(xAxis,yAxis);
     }
     
-    public static ColorObject generateColorsArray(PixelReader pr, int width, int height) {
+    public static ColorObject generateColorsArray(PixelReader reader, int width, int height) {
     	ArrayList<Integer> redPixels = new ArrayList<>(Collections.nCopies(256, 0));
     	ArrayList<Integer> greenPixels = new ArrayList<>(Collections.nCopies(256, 0));
     	ArrayList<Integer> bluePixels = new ArrayList<>(Collections.nCopies(256, 0));
     	
     	for(int i = 0; i < width; i++) {
     		for(int j = 0; j < height; j++) {
-    			Color color = pr.getColor(i, j);
+    			Color color = reader.getColor(i, j);
     			int red = ColorUtil.doubleToRGB(color.getRed());
     			int green = ColorUtil.doubleToRGB(color.getGreen());
     			int blue = ColorUtil.doubleToRGB(color.getBlue());
